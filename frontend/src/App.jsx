@@ -13,7 +13,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/triage/assess', formData);
+      const response = await axios.post('https://triagewise-backend.onrender.com/api/triage/assess', formData);
       setTriageResult(response.data.data);
     } catch (err) {
       console.error(err);
