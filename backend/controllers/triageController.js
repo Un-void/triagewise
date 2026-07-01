@@ -2,12 +2,12 @@ import { Assessment } from '../models/Assessment.js';
 import { GoogleGenAI, Type } from '@google/genai';
 
 const RED_FLAGS = [
-  'chest pain', 
-  'shortness of breath', 
-  'difficulty breathing', 
-  'stiff neck', 
-  'sudden numbness', 
-  'loss of vision', 
+  'chest pain',
+  'shortness of breath',
+  'difficulty breathing',
+  'stiff neck',
+  'sudden numbness',
+  'loss of vision',
   'confusion'
 ];
 
@@ -33,16 +33,19 @@ export const assessSymptoms = async (req, res) => {
       severityLevel = 'High';
       recommendedAction = 'URGENT: Seek immediate medical attention or call emergency services.';
     } else {
-      // 2. Call Gemini API for dynamic symptom triage
-      const apiKey = process.env.GEMINI_API_KEY;
-      console.log('[Triage] API Key present:', !!apiKey, '| Key prefix:', apiKey?.substring(0, 6));
-
-      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        return res.status(500).json({ error: 'Gemini API key is missing or not configured in .env' });
+      // 2. Setup Google Gen AI 
+      // Safe logging to confirm Render is feeding the string without leaking it
+      console.log('[Triage] Checking API Key variable attachment...');
+      if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+        return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not defined or initialized.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey });
-      
+      console.log('[Triage] Key prefix detected:', process.env.GEMINI_API_KEY.substring(0, 6));
+
+      // LEAVE THIS EMPTY: This tells the @google/genai SDK to parse the environment 
+      // variable configuration variables natively, handling the complex 'AQ.' authentication block.
+      const ai = new GoogleGenAI();
+
       const prompt = `You are a medical triage assistant. A user has provided the following details:
 Age: ${age}
 Gender: ${gender}
@@ -94,7 +97,7 @@ Provide a recommended action, a list of home remedies, and a list of red flags t
       redFlagsToWatch = jsonResult.redFlagsToWatch || [];
     }
 
-    // 3. Save assessment
+    // 3. Save assessment transaction to MongoDB
     const newAssessment = new Assessment({
       age,
       gender,
@@ -118,7 +121,7 @@ Provide a recommended action, a list of home remedies, and a list of red flags t
 
   } catch (error) {
     console.error('[Triage] ERROR:', error.message);
-    console.error('[Triage] Full error:', error);
-    res.status(500).json({ error: `Assessment failed: ${error.message}` });
+    console.error('[Triage] Full error detail trace:', error);
+    res.status(500).json({ error: `Assessment processing breakdown: ${error.message}` });
   }
 };
