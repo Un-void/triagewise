@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 
 # Explicit Environment/Secret Files
+.env.development
 .env
 .env.production
-.env.development
+.env.local
+**/.env
