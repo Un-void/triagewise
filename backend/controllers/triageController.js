@@ -33,18 +33,15 @@ export const assessSymptoms = async (req, res) => {
       severityLevel = 'High';
       recommendedAction = 'URGENT: Seek immediate medical attention or call emergency services.';
     } else {
-      // 2. Setup Google Gen AI 
-      // Safe logging to confirm Render is feeding the string without leaking it
-      console.log('[Triage] Checking API Key variable attachment...');
-      if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      // 2. Call Gemini API for dynamic symptom triage
+      const apiKey = process.env.GEMINI_API_KEY;
+      console.log('[Triage] API Key present:', !!apiKey, '| Key prefix:', apiKey?.substring(0, 6));
+
+      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
         return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not defined or initialized.' });
       }
 
-      console.log('[Triage] Key prefix detected:', process.env.GEMINI_API_KEY.substring(0, 6));
-
-      // LEAVE THIS EMPTY: This tells the @google/genai SDK to parse the environment 
-      // variable configuration variables natively, handling the complex 'AQ.' authentication block.
-      const ai = new GoogleGenAI();
+      const ai = new GoogleGenAI({ apiKey });
 
       const prompt = `You are a medical triage assistant. A user has provided the following details:
 Age: ${age}
