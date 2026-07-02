@@ -34,14 +34,11 @@ export const assessSymptoms = async (req, res) => {
       recommendedAction = 'URGENT: Seek immediate medical attention or call emergency services.';
     } else {
       // 2. Call Gemini API for dynamic symptom triage
-      const apiKey = process.env.GEMINI_API_KEY;
-      console.log('[Triage] API Key present:', !!apiKey, '| Key prefix:', apiKey?.substring(0, 6));
-
-      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
         return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not defined or initialized.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI();
 
       const prompt = `You are a medical triage assistant. A user has provided the following details:
 Age: ${age}
