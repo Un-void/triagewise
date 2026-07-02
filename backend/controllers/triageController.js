@@ -38,7 +38,8 @@ export const assessSymptoms = async (req, res) => {
         return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not defined or initialized.' });
       }
 
-      const ai = new GoogleGenAI({});
+      console.log('[Triage] Initializing SDK with GEMINI_API_KEY prefix:', process.env.GEMINI_API_KEY?.substring(0, 6));
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
       const prompt = `You are a medical triage assistant. A user has provided the following details:
 Age: ${age}
